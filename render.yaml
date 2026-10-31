@@ -17,3 +17,5 @@ services:
         generateValue: true
       - key: GOOGLE_CLIENT_ID
         value: 644735241675-7u6e7p8go0o641tmif2guark1s7kolfl.apps.googleusercontent.com
+      - key: FIREBASE_PROJECT_ID
+        value: frontline-high-school

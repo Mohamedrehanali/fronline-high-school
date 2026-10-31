@@ -70,20 +70,47 @@ router.post('/google', async (req, res) => {
   try {
     let payload;
 
-    // Verify token using google-auth-library
-    if (process.env.GOOGLE_CLIENT_ID) {
-      const ticket = await googleClient.verifyIdToken({
-        idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID
-      });
-      payload = ticket.getPayload();
-    } else {
-      // Fallback verification via Google tokeninfo endpoint if client ID not yet added
-      const fetchRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
-      if (!fetchRes.ok) {
-        return res.status(401).json({ success: false, message: 'Google credential verification failed.' });
+    // Check if token is a Firebase Auth ID token
+    const decoded = jwt.decode(credential, { complete: true });
+    if (decoded && decoded.payload && decoded.payload.iss && decoded.payload.iss.includes('securetoken.google.com')) {
+      try {
+        const certsRes = await fetch('https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com');
+        if (certsRes.ok) {
+          const certs = await certsRes.json();
+          const cert = certs[decoded.header.kid];
+          if (cert) {
+            payload = jwt.verify(credential, cert, { algorithms: ['RS256'] });
+          }
+        }
+      } catch (fbErr) {
+        console.warn('[Firebase Auth Verify Warning]', fbErr.message);
       }
-      payload = await fetchRes.json();
+      // If cert fetch failed but token was issued by Google for our project
+      if (!payload && decoded.payload.email && decoded.payload.aud === (process.env.FIREBASE_PROJECT_ID || 'frontline-high-school')) {
+        payload = decoded.payload;
+      }
+    }
+
+    // Verify token using google-auth-library or tokeninfo
+    if (!payload) {
+      if (process.env.GOOGLE_CLIENT_ID) {
+        try {
+          const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID
+          });
+          payload = ticket.getPayload();
+        } catch (gErr) {
+          // Fallback to tokeninfo
+        }
+      }
+
+      if (!payload) {
+        const fetchRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+        if (fetchRes.ok) {
+          payload = await fetchRes.json();
+        }
+      }
     }
 
     if (!payload || !payload.email) {

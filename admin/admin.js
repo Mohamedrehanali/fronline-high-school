@@ -94,73 +94,97 @@ function showDashboard(username, picture) {
 }
 
 // ==========================================
-// GOOGLE SIGN-IN HANDLER
+// GOOGLE & FIREBASE AUTHENTICATION HANDLER
 // ==========================================
-const DEFAULT_GOOGLE_CLIENT_ID = '644735241675-7u6e7p8go0o641tmif2guark1s7kolfl.apps.googleusercontent.com';
-let googleClientId = DEFAULT_GOOGLE_CLIENT_ID;
-let googleInitRetries = 0;
+const firebaseConfig = {
+  apiKey: "AIzaSyAoJ1q0FrIcmzcvWfMeBPz5Yxek9yDw3ZE",
+  authDomain: "frontline-high-school.firebaseapp.com",
+  projectId: "frontline-high-school",
+  storageBucket: "frontline-high-school.firebasestorage.app",
+  messagingSenderId: "644735241675",
+  appId: "1:644735241675:web:92acad05790b0ac3653a4e"
+};
 
-async function initGoogleSignIn() {
+let firebaseAuth = null;
+let googleAuthProvider = null;
+
+function initFirebase() {
   try {
-    const fallbackBtn = document.getElementById('fallbackGoogleBtn');
-    const googleBtnContainer = document.getElementById('googleSignInBtn');
-
-    // Optionally fetch dynamic config from server if available
-    try {
-      const res = await fetch(`${API_BASE}/auth/google-config`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.googleClientId) {
-          googleClientId = data.googleClientId;
-        }
-      }
-    } catch (e) {
-      // Use DEFAULT_GOOGLE_CLIENT_ID
+    if (window.firebase && !firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
-
-    const clientIdToUse = googleClientId || DEFAULT_GOOGLE_CLIENT_ID;
-
-    if (clientIdToUse && window.google && window.google.accounts && window.google.accounts.id) {
-      window.google.accounts.id.initialize({
-        client_id: clientIdToUse,
-        callback: handleGoogleSignInCallback,
-        auto_select: false
-      });
-
-      // Calculate container width safely
-      const containerWidth = Math.min(320, window.innerWidth - 60);
-
-      window.google.accounts.id.renderButton(googleBtnContainer, {
-        theme: 'outline',
-        size: 'large',
-        width: containerWidth,
-        text: 'signin_with',
-        shape: 'rectangular',
-        logo_alignment: 'left'
-      });
-
-      if (fallbackBtn) fallbackBtn.style.display = 'none';
-      if (googleBtnContainer) googleBtnContainer.style.display = 'block';
-    } else if (googleInitRetries < 25) {
-      // If Google CDN script is still loading asynchronously, retry
-      googleInitRetries++;
-      setTimeout(initGoogleSignIn, 200);
-    } else {
-      if (fallbackBtn) fallbackBtn.style.display = 'flex';
-      if (googleBtnContainer) googleBtnContainer.style.display = 'none';
+    if (window.firebase) {
+      firebaseAuth = firebase.auth();
+      googleAuthProvider = new firebase.auth.GoogleAuthProvider();
+      googleAuthProvider.setCustomParameters({ prompt: 'select_account' });
     }
   } catch (err) {
-    console.warn('Could not initialize Google Sign-In:', err);
+    console.warn('[Firebase Init Warning]', err);
   }
+}
+initFirebase();
+
+const DEFAULT_GOOGLE_CLIENT_ID = '644735241675-7u6e7p8go0o641tmif2guark1s7kolfl.apps.googleusercontent.com';
+let googleClientId = DEFAULT_GOOGLE_CLIENT_ID;
+
+async function initGoogleSignIn() {
+  initFirebase();
+  const fallbackBtn = document.getElementById('fallbackGoogleBtn');
+  const googleBtnContainer = document.getElementById('googleSignInBtn');
+
+  // Keep the Firebase custom button always visible and active
+  if (fallbackBtn) fallbackBtn.style.display = 'flex';
+  if (googleBtnContainer) googleBtnContainer.style.display = 'none';
 }
 window.initGoogleSignIn = initGoogleSignIn;
 
-window.promptGoogleSignIn = function() {
-  const clientIdToUse = googleClientId || DEFAULT_GOOGLE_CLIENT_ID;
+window.promptGoogleSignIn = async function() {
+  loginAlert.style.display = 'none';
+
+  // 1. Primary: Use Firebase Auth signInWithPopup (Authorized via Firebase Console)
+  if (window.firebase && firebaseAuth && googleAuthProvider) {
+    try {
+      loginBtn.disabled = true;
+      const result = await firebaseAuth.signInWithPopup(googleAuthProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+
+      const res = await fetch(`${API_BASE}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: idToken })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        authToken = data.token;
+        localStorage.setItem('frontline_admin_token', authToken);
+        localStorage.setItem('frontline_admin_user', JSON.stringify(data.user));
+        showDashboard(data.user.username, data.user.picture);
+        return;
+      } else {
+        loginAlert.textContent = data.message || 'Google authentication was not authorized.';
+        loginAlert.style.display = 'block';
+        return;
+      }
+    } catch (fbErr) {
+      if (fbErr.code === 'auth/popup-closed-by-user') {
+        return;
+      }
+      console.warn('[Firebase Auth Error]', fbErr);
+      loginAlert.textContent = fbErr.message || 'Google authentication failed.';
+      loginAlert.style.display = 'block';
+      return;
+    } finally {
+      loginBtn.disabled = false;
+    }
+  }
+
+  // 2. Fallback to GIS prompt if available
   if (window.google && window.google.accounts && window.google.accounts.id) {
     window.google.accounts.id.prompt();
   } else {
-    alert('Google services are still loading. Please wait a moment or sign in with admin password.');
+    alert('Google authentication service is still initializing. Please wait 2 seconds or sign in with admin password.');
   }
 };
 
