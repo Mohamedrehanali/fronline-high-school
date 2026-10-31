@@ -15,3 +15,5 @@ services:
         value: frontline2024
       - key: JWT_SECRET
         generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        value: 644735241675-7u6e7p8go0o641tmif2guark1s7kolfl.apps.googleusercontent.com

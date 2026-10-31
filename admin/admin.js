@@ -97,52 +97,65 @@ function showDashboard(username, picture) {
 // GOOGLE SIGN-IN HANDLER
 // ==========================================
 let googleClientId = '';
+let googleInitRetries = 0;
 
 async function initGoogleSignIn() {
   try {
-    const res = await fetch(`${API_BASE}/auth/google-config`);
-    if (res.ok) {
-      const data = await res.json();
-      googleClientId = data.googleClientId;
-
-      const fallbackBtn = document.getElementById('fallbackGoogleBtn');
-      const googleBtnContainer = document.getElementById('googleSignInBtn');
-
-      if (googleClientId && window.google && window.google.accounts && window.google.accounts.id) {
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: handleGoogleSignInCallback
-        });
-
-        window.google.accounts.id.renderButton(googleBtnContainer, {
-          theme: 'outline',
-          size: 'large',
-          width: 360,
-          text: 'signin_with',
-          shape: 'rectangular',
-          logo_alignment: 'left'
-        });
-
-        if (fallbackBtn) fallbackBtn.style.display = 'none';
-        if (googleBtnContainer) googleBtnContainer.style.display = 'block';
-      } else {
-        // If client ID not configured yet or script still loading
-        if (fallbackBtn) fallbackBtn.style.display = 'flex';
-        if (googleBtnContainer) googleBtnContainer.style.display = 'none';
+    if (!googleClientId) {
+      const res = await fetch(`${API_BASE}/auth/google-config`);
+      if (res.ok) {
+        const data = await res.json();
+        googleClientId = data.googleClientId;
       }
+    }
+
+    const fallbackBtn = document.getElementById('fallbackGoogleBtn');
+    const googleBtnContainer = document.getElementById('googleSignInBtn');
+
+    if (googleClientId && window.google && window.google.accounts && window.google.accounts.id) {
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleSignInCallback,
+        auto_select: false
+      });
+
+      // Calculate container width safely
+      const containerWidth = Math.min(320, window.innerWidth - 60);
+
+      window.google.accounts.id.renderButton(googleBtnContainer, {
+        theme: 'outline',
+        size: 'large',
+        width: containerWidth,
+        text: 'signin_with',
+        shape: 'rectangular',
+        logo_alignment: 'left'
+      });
+
+      if (fallbackBtn) fallbackBtn.style.display = 'none';
+      if (googleBtnContainer) googleBtnContainer.style.display = 'block';
+    } else if (googleClientId && googleInitRetries < 20) {
+      // If script is still loading asynchronously from Google CDN, retry
+      googleInitRetries++;
+      setTimeout(initGoogleSignIn, 250);
+    } else {
+      if (fallbackBtn) fallbackBtn.style.display = 'flex';
+      if (googleBtnContainer) googleBtnContainer.style.display = 'none';
     }
   } catch (err) {
     console.warn('Could not initialize Google Sign-In:', err);
   }
 }
+window.initGoogleSignIn = initGoogleSignIn;
 
 window.promptGoogleSignIn = function() {
   if (!googleClientId) {
-    alert('Google Sign-In Setup:\n\nTo enable one-click Google Sign-In:\n1. Create a free OAuth Client ID in Google Cloud Console.\n2. Add GOOGLE_CLIENT_ID=your_id.apps.googleusercontent.com in your .env file.\n\nIn the meantime, you can sign in instantly using the Admin Username & Password (admin / frontline2024)!');
+    alert('Google Sign-In Setup:\n\nClient ID is missing in .env.\nIn the meantime, you can sign in with Username: admin, Password: frontline2024.');
     return;
   }
   if (window.google && window.google.accounts && window.google.accounts.id) {
     window.google.accounts.id.prompt();
+  } else {
+    alert('Google services are still loading. Please wait 2 seconds or sign in with admin password.');
   }
 };
 
