@@ -172,7 +172,12 @@ window.promptGoogleSignIn = async function() {
         return;
       }
       console.warn('[Firebase Auth Error]', fbErr);
-      loginAlert.textContent = fbErr.message || 'Google authentication failed.';
+      if (fbErr.code === 'auth/unauthorized-domain' || (fbErr.message && fbErr.message.includes('unauthorized-domain'))) {
+        const currentHost = window.location.hostname;
+        loginAlert.innerHTML = `Domain <strong>${currentHost}</strong> is not authorized in Firebase.<br><br>👉 Go to <strong>Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized domains</strong>, click <strong>Add domain</strong> and enter: <code>${currentHost}</code>`;
+      } else {
+        loginAlert.textContent = fbErr.message || 'Google authentication failed.';
+      }
       loginAlert.style.display = 'block';
       return;
     } finally {
