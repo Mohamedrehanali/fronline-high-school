@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css?v=2">
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer onload="if(window.initGoogleSignIn) window.initGoogleSignIn()"></script>
 </head>
@@ -45,7 +45,7 @@
 
         <div class="auth-toggle-link">
           <span>Don't have an account?</span>
-          <a href="javascript:void(0)" onclick="toggleAuthMode('register')">Create Account</a>
+          <button type="button" class="link-btn" onclick="toggleAuthMode('register')">Create Account</button>
         </div>
       </form>
 
@@ -68,7 +68,7 @@
 
         <div class="auth-toggle-link">
           <span>Already have an account?</span>
-          <a href="javascript:void(0)" onclick="toggleAuthMode('login')">Sign In</a>
+          <button type="button" class="link-btn" onclick="toggleAuthMode('login')">Sign In</button>
         </div>
       </form>
     </div>
@@ -685,6 +685,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
-  <script src="admin.js"></script>
+  <script src="admin.js?v=2"></script>
 </body>
 </html>

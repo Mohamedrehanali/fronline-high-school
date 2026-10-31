@@ -274,16 +274,23 @@ body {
   gap: 6px;
 }
 
-.auth-toggle-link a {
+.auth-toggle-link a,
+.auth-toggle-link .link-btn {
+  background: none;
+  border: none;
   color: var(--navy);
   font-weight: 700;
-  text-decoration: none;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
   transition: color 0.15s ease;
 }
 
-.auth-toggle-link a:hover {
+.auth-toggle-link a:hover,
+.auth-toggle-link .link-btn:hover {
   color: var(--gold);
-  text-decoration: underline;
 }
 
 .user-avatar {
