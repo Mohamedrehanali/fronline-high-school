@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | Frontline High School</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <!-- Login Overlay -->
+  <div id="loginScreen" class="login-wrapper">
+    <div class="login-box">
+      <div class="login-header">
+        <img src="/assets/frontline-logo.png" alt="Frontline High School Logo" class="login-logo">
+        <h2>FRONTLINE</h2>
+        <p>HIGH SCHOOL · ADMIN PORTAL</p>
+      </div>
+      <form id="loginForm" class="login-form">
+        <div id="loginAlert" class="alert error" style="display: none;"></div>
+        <div class="form-group">
+          <label for="username">Admin Username</label>
+          <input type="text" id="username" name="username" required placeholder="e.g. admin" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required placeholder="Enter admin password" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginBtn">Sign In to Dashboard</button>
+        <p class="login-hint">Default credentials: <code>admin</code> / <code>frontline2024</code></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Dashboard App (Shown after login) -->
+  <div id="dashboardApp" class="app-wrapper" style="display: none;">
+    <!-- Top Bar -->
+    <header class="app-header">
+      <div class="header-left">
+        <img src="/assets/frontline-logo.png" alt="Frontline Logo" class="brand-logo">
+        <div class="brand-text">
+          <h1>Frontline High School</h1>
+          <span>Admissions & Enquiries Desk · Mahbubnagar</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <a href="/" target="_blank" class="nav-link">↗ View Live Website</a>
+        <div class="user-badge">
+          <span class="user-dot"></span>
+          <span id="adminUsernameDisplay">admin</span>
+        </div>
+        <button id="logoutBtn" class="btn-logout" title="Log out">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="dashboard-main">
+      <!-- Stats Row -->
+      <section class="stats-row">
+        <div class="stat-card">
+          <span class="stat-icon icon-total">📋</span>
+          <div class="stat-info">
+            <span class="stat-label">Total Enquiries</span>
+            <strong id="statTotal" class="stat-number">0</strong>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon icon-today">⚡</span>
+          <div class="stat-info">
+            <span class="stat-label">Received Today</span>
+            <strong id="statToday" class="stat-number">0</strong>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon icon-new">🆕</span>
+          <div class="stat-info">
+            <span class="stat-label">New / Pending</span>
+            <strong id="statNew" class="stat-number">0</strong>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon icon-enrolled">🎓</span>
+          <div class="stat-info">
+            <span class="stat-label">Enrolled Students</span>
+            <strong id="statEnrolled" class="stat-number">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action & Filter Bar -->
+      <section class="table-controls">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search by parent, student, phone, or Ref ID...">
+        </div>
+        <div class="filter-group">
+          <select id="statusFilter" class="select-control">
+            <option value="all">All Statuses</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="enrolled">Enrolled</option>
+            <option value="closed">Closed</option>
+          </select>
+          <select id="gradeFilter" class="select-control">
+            <option value="all">All Grades</option>
+            <option value="Nursery">Nursery</option>
+            <option value="LKG">LKG</option>
+            <option value="UKG">UKG</option>
+            <option value="Class 1">Class 1</option>
+            <option value="Class 2">Class 2</option>
+            <option value="Class 3">Class 3</option>
+            <option value="Class 4">Class 4</option>
+            <option value="Class 5">Class 5</option>
+            <option value="Class 6">Class 6</option>
+            <option value="Class 7">Class 7</option>
+            <option value="Class 8">Class 8</option>
+            <option value="Class 9">Class 9</option>
+            <option value="Class 10">Class 10</option>
+          </select>
+          <button id="refreshBtn" class="btn btn-secondary" title="Refresh records">↻ Refresh</button>
+          <button id="exportCsvBtn" class="btn btn-gold" title="Download Excel/CSV file">⬇ Export CSV</button>
+        </div>
+      </section>
+
+      <!-- Table Section -->
+      <section class="table-container">
+        <div id="tableLoading" class="table-loader" style="display: none;">
+          <div class="spinner"></div>
+          <span>Loading student enquiries...</span>
+        </div>
+        <table class="data-table" id="enquiriesTable">
+          <thead>
+            <tr>
+              <th>Ref ID</th>
+              <th>Date & Time</th>
+              <th>Parent Name</th>
+              <th>Student & Grade</th>
+              <th>Phone & Quick Actions</th>
+              <th>Status</th>
+              <th>Office Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Dynamic rows will be inserted here -->
+          </tbody>
+        </table>
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <span class="empty-icon">📂</span>
+          <h3>No enquiries found</h3>
+          <p>When parents submit enquiry forms on the website, they will appear here in real time.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Detail & Note Modal -->
+  <div id="detailModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalRefTitle">Enquiry Details</h3>
+        <button class="modal-close" id="modalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Injected via admin.js -->
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

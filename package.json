@@ -1,0 +1,30 @@
+{
+  "name": "frontline-high-school-backend",
+  "version": "1.0.0",
+  "description": "Backend API and Admin Portal for Frontline High School Website",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
+    "test": "node test-backend.js"
+  },
+  "keywords": [
+    "frontline",
+    "school",
+    "backend",
+    "express",
+    "sqlite"
+  ],
+  "author": "Frontline High School",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.8.1"
+  }
+}
