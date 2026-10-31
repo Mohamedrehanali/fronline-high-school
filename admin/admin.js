@@ -257,9 +257,103 @@ loginForm.addEventListener('submit', async (e) => {
     loginAlert.style.display = 'block';
   } finally {
     loginBtn.disabled = false;
-    loginBtn.textContent = 'Sign In to Dashboard';
+    loginBtn.textContent = 'Sign In with Password';
   }
 });
+
+// ==========================================
+// CREATE ACCOUNT (REGISTER) HANDLER
+// ==========================================
+window.toggleAuthMode = function(mode) {
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const loginAlert = document.getElementById('loginAlert');
+  const registerAlert = document.getElementById('registerAlert');
+
+  if (loginAlert) loginAlert.style.display = 'none';
+  if (registerAlert) registerAlert.style.display = 'none';
+
+  if (mode === 'register') {
+    if (loginForm) loginForm.style.display = 'none';
+    if (registerForm) registerForm.style.display = 'block';
+  } else {
+    if (registerForm) registerForm.style.display = 'none';
+    if (loginForm) loginForm.style.display = 'block';
+  }
+};
+
+const registerForm = document.getElementById('registerForm');
+const registerAlert = document.getElementById('registerAlert');
+const registerBtn = document.getElementById('registerBtn');
+
+if (registerForm) {
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (registerAlert) registerAlert.style.display = 'none';
+
+    const username = registerForm.regUsername.value.trim();
+    const password = registerForm.regPassword.value;
+    const confirmPassword = registerForm.regConfirmPassword.value;
+
+    if (!username || !password) {
+      registerAlert.textContent = 'Username and password are required.';
+      registerAlert.style.display = 'block';
+      return;
+    }
+
+    if (username.length < 3) {
+      registerAlert.textContent = 'Username must be at least 3 characters.';
+      registerAlert.style.display = 'block';
+      return;
+    }
+
+    if (password.length < 6) {
+      registerAlert.textContent = 'Password must be at least 6 characters.';
+      registerAlert.style.display = 'block';
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      registerAlert.textContent = 'Passwords do not match. Please verify.';
+      registerAlert.style.display = 'block';
+      return;
+    }
+
+    if (registerBtn) {
+      registerBtn.disabled = true;
+      registerBtn.textContent = 'Creating Account...';
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, confirmPassword })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        authToken = data.token;
+        localStorage.setItem('frontline_admin_token', authToken);
+        localStorage.setItem('frontline_admin_user', JSON.stringify(data.user));
+        showDashboard(data.user.username);
+        registerForm.reset();
+      } else {
+        registerAlert.textContent = data.message || 'Failed to create account.';
+        registerAlert.style.display = 'block';
+      }
+    } catch (err) {
+      registerAlert.textContent = 'Network error while creating account. Please try again.';
+      registerAlert.style.display = 'block';
+    } finally {
+      if (registerBtn) {
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'Create Account & Sign In';
+      }
+    }
+  });
+}
 
 logoutBtn.addEventListener('click', async () => {
   try {

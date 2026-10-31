@@ -263,6 +263,29 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
+.auth-toggle-link {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.auth-toggle-link a {
+  color: var(--navy);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.auth-toggle-link a:hover {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
 .user-avatar {
   width: 24px;
   height: 24px;

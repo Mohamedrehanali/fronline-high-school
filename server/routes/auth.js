@@ -41,6 +41,62 @@ router.post('/login', (req, res) => {
   });
 });
 
+// POST /api/auth/register - Create a new admin account
+router.post('/register', (req, res) => {
+  const { username, password, confirmPassword } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Username and password are required.'
+    });
+  }
+
+  const cleanUsername = username.trim();
+  if (cleanUsername.length < 3) {
+    return res.status(400).json({
+      success: false,
+      message: 'Username must be at least 3 characters long.'
+    });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: 'Password must be at least 6 characters long.'
+    });
+  }
+
+  if (confirmPassword && password !== confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'Passwords do not match.'
+    });
+  }
+
+  const result = dbOperations.createAdminUser(cleanUsername, password);
+  if (!result.success) {
+    return res.status(409).json(result);
+  }
+
+  // Issue 24h JWT token for instant login
+  const token = jwt.sign(
+    { id: result.user.id, username: result.user.username, role: result.user.role },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+
+  return res.status(201).json({
+    success: true,
+    message: 'Account created successfully! Welcome to Frontline Admin Desk.',
+    token,
+    user: {
+      username: result.user.username,
+      role: result.user.role
+    }
+  });
+});
+
 // GET /api/auth/check
 router.get('/check', authenticateAdmin, (req, res) => {
   return res.json({

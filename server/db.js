@@ -358,6 +358,35 @@ const dbOperations = {
     };
   },
 
+  // Create a new admin user
+  createAdminUser(username, password, role = 'admin') {
+    const checkStmt = db.prepare('SELECT id FROM admin_users WHERE username = ?');
+    const existing = checkStmt.get(username);
+    if (existing) {
+      return {
+        success: false,
+        message: `Username '${username}' is already taken. Please choose another username.`
+      };
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+    const insertStmt = db.prepare(`
+      INSERT INTO admin_users (username, password_hash, role, created_at)
+      VALUES (?, ?, ?, ?)
+    `);
+    const info = insertStmt.run(username, hash, role, new Date().toISOString());
+
+    return {
+      success: true,
+      user: {
+        id: info.lastInsertRowid,
+        username,
+        role
+      }
+    };
+  },
+
   // Content CMS Operations
   getAllContent() {
     const rows = db.prepare('SELECT section_key, content_json FROM site_content').all();
