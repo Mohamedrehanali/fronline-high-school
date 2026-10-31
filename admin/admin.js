@@ -96,25 +96,33 @@ function showDashboard(username, picture) {
 // ==========================================
 // GOOGLE SIGN-IN HANDLER
 // ==========================================
-let googleClientId = '';
+const DEFAULT_GOOGLE_CLIENT_ID = '644735241675-7u6e7p8go0o641tmif2guark1s7kolfl.apps.googleusercontent.com';
+let googleClientId = DEFAULT_GOOGLE_CLIENT_ID;
 let googleInitRetries = 0;
 
 async function initGoogleSignIn() {
   try {
-    if (!googleClientId) {
-      const res = await fetch(`${API_BASE}/auth/google-config`);
-      if (res.ok) {
-        const data = await res.json();
-        googleClientId = data.googleClientId;
-      }
-    }
-
     const fallbackBtn = document.getElementById('fallbackGoogleBtn');
     const googleBtnContainer = document.getElementById('googleSignInBtn');
 
-    if (googleClientId && window.google && window.google.accounts && window.google.accounts.id) {
+    // Optionally fetch dynamic config from server if available
+    try {
+      const res = await fetch(`${API_BASE}/auth/google-config`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.googleClientId) {
+          googleClientId = data.googleClientId;
+        }
+      }
+    } catch (e) {
+      // Use DEFAULT_GOOGLE_CLIENT_ID
+    }
+
+    const clientIdToUse = googleClientId || DEFAULT_GOOGLE_CLIENT_ID;
+
+    if (clientIdToUse && window.google && window.google.accounts && window.google.accounts.id) {
       window.google.accounts.id.initialize({
-        client_id: googleClientId,
+        client_id: clientIdToUse,
         callback: handleGoogleSignInCallback,
         auto_select: false
       });
@@ -133,10 +141,10 @@ async function initGoogleSignIn() {
 
       if (fallbackBtn) fallbackBtn.style.display = 'none';
       if (googleBtnContainer) googleBtnContainer.style.display = 'block';
-    } else if (googleClientId && googleInitRetries < 20) {
-      // If script is still loading asynchronously from Google CDN, retry
+    } else if (googleInitRetries < 25) {
+      // If Google CDN script is still loading asynchronously, retry
       googleInitRetries++;
-      setTimeout(initGoogleSignIn, 250);
+      setTimeout(initGoogleSignIn, 200);
     } else {
       if (fallbackBtn) fallbackBtn.style.display = 'flex';
       if (googleBtnContainer) googleBtnContainer.style.display = 'none';
@@ -148,14 +156,11 @@ async function initGoogleSignIn() {
 window.initGoogleSignIn = initGoogleSignIn;
 
 window.promptGoogleSignIn = function() {
-  if (!googleClientId) {
-    alert('Google Sign-In Setup:\n\nClient ID is missing in .env.\nIn the meantime, you can sign in with Username: admin, Password: frontline2024.');
-    return;
-  }
+  const clientIdToUse = googleClientId || DEFAULT_GOOGLE_CLIENT_ID;
   if (window.google && window.google.accounts && window.google.accounts.id) {
     window.google.accounts.id.prompt();
   } else {
-    alert('Google services are still loading. Please wait 2 seconds or sign in with admin password.');
+    alert('Google services are still loading. Please wait a moment or sign in with admin password.');
   }
 };
 
