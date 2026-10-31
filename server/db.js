@@ -68,6 +68,19 @@ function initDatabase() {
     );
   `);
 
+  // Site Content Table (for matter and photos CMS)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS site_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      section_key TEXT UNIQUE NOT NULL,
+      content_json TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+  `);
+
+  // Seed default website matter and photos
+  seedDefaultContent();
+
   // Seed default admin user if not exists
   const defaultAdmin = process.env.ADMIN_USERNAME || 'admin';
   const defaultPass = process.env.ADMIN_PASSWORD || 'frontline2024';
@@ -84,6 +97,105 @@ function initDatabase() {
     `);
     insertStmt.run(defaultAdmin, hash, 'admin', new Date().toISOString());
     console.log(`[DB] Default admin user '${defaultAdmin}' initialized.`);
+  }
+}
+
+// Default content for school website
+const DEFAULT_SITE_CONTENT = {
+  contact: {
+    phone: "+91 98859 73220",
+    phone_clean: "+919885973220",
+    whatsapp: "919885973220",
+    address: "Sha Shab Gutta, X Road, Sheshabgutta,\nMahbubnagar, Telangana 509001",
+    hours: "Monday – Saturday · 9:00 AM – 5:30 PM",
+    hours_note: "Confirm holiday and office timings by phone."
+  },
+  hero: {
+    eyebrow: "WELCOME TO",
+    title_line1: "FRONTLINE",
+    title_line2: "HIGH SCHOOL",
+    tagline: "Learning today. Leading tomorrow.",
+    copy: "A school community focused on learning, character and helping every student move forward.",
+    location_badge: "Sheshabgutta, Mahbubnagar – 509001",
+    bg_photo: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1900&q=85"
+  },
+  about: {
+    heading: "A place to learn,\ngrow and shine.",
+    lead: "Welcome to Frontline High School.",
+    p1: "Frontline High School is located at Sha Shab Gutta, X Road, Sheshabgutta, Mahbubnagar, Telangana. This website is a place for parents and students to find school information, admission updates, events and contact details.",
+    p2: "We believe every student's journey matters. Our aim is to support a positive learning environment where students can build knowledge, confidence and good values.",
+    founding_year: "2010",
+    founding_note: "Established with a commitment to quality education.",
+    campus_photo: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1100&q=85"
+  },
+  leadership: {
+    correspondent_name: "Mohammed Ahmed",
+    correspondent_title: "CORRESPONDENT",
+    correspondent_message: "We are committed to nurturing disciplined, thoughtful individuals equipped for life and career success.",
+    correspondent_photo: "",
+    principal_name: "Dr. K. Srinivasa Rao",
+    principal_title: "PRINCIPAL",
+    principal_message: "Our faculty empowers students with strong academic fundamentals, character building, and creative thinking.",
+    principal_photo: "",
+    best_teacher_name: "Mrs. Radhika Sharma",
+    best_teacher_title: "BEST TEACHER · MATHEMATICS",
+    best_teacher_message: "Recognised for innovative teaching methods and student mentoring in senior classes.",
+    best_teacher_photo: ""
+  },
+  students: {
+    topper_badge: "TOPPER · CLASS 10",
+    topper_name: "Amina Fatima",
+    topper_details: "Scored 98.4% in Board Examinations · School Rank 1",
+    topper_photo: "",
+    achiever_badge: "ACHIEVER · SCIENCE OLYMPIAD",
+    achiever_name: "Syed Rayyan",
+    achiever_details: "Gold Medalist at State Level Science Olympiad",
+    achiever_photo: "",
+    star_badge: "STUDENT OF THE YEAR",
+    star_name: "Ananya Reddy",
+    star_details: "Excellence in Academics, Sports & Leadership",
+    star_photo: ""
+  },
+  events: {
+    event1_badge: "UPCOMING EVENT · 14 NOV",
+    event1_title: "Annual Sports Day & Children's Day",
+    event1_desc: "Track & field events, cultural programmes, and annual student awards at school campus from 9:00 AM.",
+    event1_photo: "",
+    event2_badge: "SCHOOL UPDATE · ADMISSIONS",
+    event2_title: "Admissions Open for Academic Year 2024-25",
+    event2_desc: "Applications are open for Nursery to Class 10. Visit school office or submit online enquiry.",
+    event2_photo: "",
+    event3_badge: "ACADEMIC CALENDAR",
+    event3_title: "Exam Dates & Timetable Notice",
+    event3_desc: "Mid-term examination schedule and syllabus revision guidelines published on notice board.",
+    event3_photo: ""
+  },
+  gallery: {
+    g1_label: "Campus",
+    g1_photo: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=800&q=80",
+    g2_label: "Classroom",
+    g2_photo: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80",
+    g3_label: "Activities",
+    g3_photo: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80",
+    g4_label: "Celebrations",
+    g4_photo: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=800&q=80",
+    g5_label: "Students",
+    g5_photo: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80",
+    g6_label: "School Events",
+    g6_photo: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80"
+  }
+};
+
+function seedDefaultContent() {
+  const checkStmt = db.prepare('SELECT id FROM site_content WHERE section_key = ?');
+  const insertStmt = db.prepare('INSERT INTO site_content (section_key, content_json, updated_at) VALUES (?, ?, ?)');
+  const now = new Date().toISOString();
+
+  for (const [key, val] of Object.entries(DEFAULT_SITE_CONTENT)) {
+    const existing = checkStmt.get(key);
+    if (!existing) {
+      insertStmt.run(key, JSON.stringify(val), now);
+    }
   }
 }
 
@@ -244,6 +356,54 @@ const dbOperations = {
       username: user.username,
       role: user.role
     };
+  },
+
+  // Content CMS Operations
+  getAllContent() {
+    const rows = db.prepare('SELECT section_key, content_json FROM site_content').all();
+    const result = {};
+    for (const row of rows) {
+      try {
+        result[row.section_key] = JSON.parse(row.content_json);
+      } catch (e) {
+        result[row.section_key] = {};
+      }
+    }
+    return result;
+  },
+
+  getContent(sectionKey) {
+    const row = db.prepare('SELECT content_json FROM site_content WHERE section_key = ?').get(sectionKey);
+    if (!row) return null;
+    try {
+      return JSON.parse(row.content_json);
+    } catch (e) {
+      return null;
+    }
+  },
+
+  updateContent(sectionKey, data) {
+    const now = new Date().toISOString();
+    const jsonStr = JSON.stringify(data);
+    const check = db.prepare('SELECT id FROM site_content WHERE section_key = ?').get(sectionKey);
+
+    if (check) {
+      db.prepare('UPDATE site_content SET content_json = ?, updated_at = ? WHERE section_key = ?')
+        .run(jsonStr, now, sectionKey);
+    } else {
+      db.prepare('INSERT INTO site_content (section_key, content_json, updated_at) VALUES (?, ?, ?)')
+        .run(sectionKey, jsonStr, now);
+    }
+    return this.getContent(sectionKey);
+  },
+
+  resetAllContent() {
+    const now = new Date().toISOString();
+    const updateStmt = db.prepare('UPDATE site_content SET content_json = ?, updated_at = ? WHERE section_key = ?');
+    for (const [key, val] of Object.entries(DEFAULT_SITE_CONTENT)) {
+      updateStmt.run(JSON.stringify(val), now, key);
+    }
+    return this.getAllContent();
   }
 };
 

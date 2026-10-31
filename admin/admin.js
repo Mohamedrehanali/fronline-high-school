@@ -131,7 +131,7 @@ logoutBtn.addEventListener('click', async () => {
 // ==========================================
 
 async function loadDashboardData() {
-  await Promise.all([loadStats(), loadEnquiries()]);
+  await Promise.all([loadStats(), loadEnquiries(), loadCmsContent()]);
 }
 
 async function loadStats() {
@@ -146,6 +146,8 @@ async function loadStats() {
       statToday.textContent = s.today || 0;
       statNew.textContent = s.new || 0;
       statEnrolled.textContent = s.enrolled || 0;
+      const badge = document.getElementById('badgeEnquiriesCount');
+      if (badge) badge.textContent = s.total || 0;
     }
   } catch (err) {
     console.error('Failed to load stats:', err);
@@ -453,6 +455,358 @@ searchInput.addEventListener('input', () => {
 statusFilter.addEventListener('change', loadEnquiries);
 gradeFilter.addEventListener('change', loadEnquiries);
 refreshBtn.addEventListener('click', loadDashboardData);
+
+// ==========================================
+// CMS CONTROLLER (MATTER & PHOTO MANAGEMENT)
+// ==========================================
+window.switchMainTab = function(tabName) {
+  const tabEnquiries = document.getElementById('tabEnquiriesBtn');
+  const tabCms = document.getElementById('tabCmsBtn');
+  const viewEnquiries = document.getElementById('enquiriesSectionView');
+  const viewCms = document.getElementById('cmsSectionView');
+
+  if (tabName === 'cms') {
+    tabEnquiries.classList.remove('active');
+    tabCms.classList.add('active');
+    viewEnquiries.style.display = 'none';
+    viewCms.style.display = 'block';
+    loadCmsContent();
+  } else {
+    tabCms.classList.remove('active');
+    tabEnquiries.classList.add('active');
+    viewCms.style.display = 'none';
+    viewEnquiries.style.display = 'block';
+  }
+};
+
+window.switchCmsSection = function(sectionId) {
+  const sections = ['secContact', 'secLeadership', 'secStudents', 'secEvents', 'secGallery'];
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (id === sectionId) ? 'block' : 'none';
+  });
+
+  const buttons = document.querySelectorAll('.cms-sub-btn');
+  buttons.forEach(btn => {
+    if (btn.getAttribute('onclick').includes(sectionId)) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+};
+
+window.triggerFileInput = function(fileInputId) {
+  const fileInput = document.getElementById(fileInputId);
+  if (fileInput) fileInput.click();
+};
+
+window.updatePreviewFromInput = function(url, previewBoxId) {
+  const box = document.getElementById(previewBoxId);
+  if (!box) return;
+  if (url && url.trim()) {
+    box.style.backgroundImage = `url('${url.trim()}')`;
+    const span = box.querySelector('span');
+    if (span) span.style.display = 'none';
+  } else {
+    box.style.backgroundImage = 'none';
+    const span = box.querySelector('span');
+    if (span) span.style.display = 'block';
+  }
+};
+
+window.handleFileUpload = async function(fileInput, targetInputId, previewBoxId) {
+  if (!fileInput.files || fileInput.files.length === 0) return;
+  const file = fileInput.files[0];
+
+  const formData = new FormData();
+  formData.append('photo', file);
+
+  const previewBox = document.getElementById(previewBoxId);
+  if (previewBox) {
+    const span = previewBox.querySelector('span');
+    if (span) span.textContent = 'Uploading...';
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: formData
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      const inputEl = document.getElementById(targetInputId);
+      if (inputEl) inputEl.value = data.url;
+      updatePreviewFromInput(data.url, previewBoxId);
+      showCmsAlert(`✓ Photo uploaded successfully! Remember to click "Save All Changes".`, 'success');
+    } else {
+      alert(data.message || 'Failed to upload photo.');
+      if (previewBox) {
+        const span = previewBox.querySelector('span');
+        if (span) span.textContent = 'Upload Failed';
+      }
+    }
+  } catch (err) {
+    alert('Error connecting to upload service.');
+  } finally {
+    fileInput.value = '';
+  }
+};
+
+async function loadCmsContent() {
+  try {
+    const res = await fetch(`${API_BASE}/content`);
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json.success || !json.content) return;
+
+    const c = json.content;
+
+    // Contact & Info
+    if (c.contact) {
+      setVal('cmsContactPhone', c.contact.phone);
+      setVal('cmsContactWhatsapp', c.contact.whatsapp);
+      setVal('cmsContactAddress', c.contact.address);
+      setVal('cmsContactHours', c.contact.hours);
+      setVal('cmsContactHoursNote', c.contact.hours_note);
+    }
+    if (c.about) {
+      setVal('cmsFoundingYear', c.about.founding_year);
+      setVal('cmsAboutLead', c.about.lead);
+      setVal('cmsAboutP1', c.about.p1);
+      setVal('cmsAboutP2', c.about.p2);
+      setVal('cmsCampusPhoto', c.about.campus_photo);
+      updatePreviewFromInput(c.about.campus_photo, 'prevCampusPhoto');
+    }
+
+    // Leadership
+    if (c.leadership) {
+      setVal('cmsCorrespName', c.leadership.correspondent_name);
+      setVal('cmsCorrespMessage', c.leadership.correspondent_message);
+      setVal('cmsCorrespPhoto', c.leadership.correspondent_photo);
+      updatePreviewFromInput(c.leadership.correspondent_photo, 'prevCorrespPhoto');
+
+      setVal('cmsPrincipalName', c.leadership.principal_name);
+      setVal('cmsPrincipalMessage', c.leadership.principal_message);
+      setVal('cmsPrincipalPhoto', c.leadership.principal_photo);
+      updatePreviewFromInput(c.leadership.principal_photo, 'prevPrincipalPhoto');
+
+      setVal('cmsTeacherName', c.leadership.best_teacher_name);
+      setVal('cmsTeacherTitle', c.leadership.best_teacher_title);
+      setVal('cmsTeacherMessage', c.leadership.best_teacher_message);
+      setVal('cmsTeacherPhoto', c.leadership.best_teacher_photo);
+      updatePreviewFromInput(c.leadership.best_teacher_photo, 'prevTeacherPhoto');
+    }
+
+    // Students
+    if (c.students) {
+      setVal('cmsTopperBadge', c.students.topper_badge);
+      setVal('cmsTopperName', c.students.topper_name);
+      setVal('cmsTopperDetails', c.students.topper_details);
+      setVal('cmsTopperPhoto', c.students.topper_photo);
+      updatePreviewFromInput(c.students.topper_photo, 'prevTopperPhoto');
+
+      setVal('cmsAchieverBadge', c.students.achiever_badge);
+      setVal('cmsAchieverName', c.students.achiever_name);
+      setVal('cmsAchieverDetails', c.students.achiever_details);
+      setVal('cmsAchieverPhoto', c.students.achiever_photo);
+      updatePreviewFromInput(c.students.achiever_photo, 'prevAchieverPhoto');
+
+      setVal('cmsStarBadge', c.students.star_badge);
+      setVal('cmsStarName', c.students.star_name);
+      setVal('cmsStarDetails', c.students.star_details);
+      setVal('cmsStarPhoto', c.students.star_photo);
+      updatePreviewFromInput(c.students.star_photo, 'prevStarPhoto');
+    }
+
+    // Events
+    if (c.events) {
+      setVal('cmsEvent1Badge', c.events.event1_badge);
+      setVal('cmsEvent1Title', c.events.event1_title);
+      setVal('cmsEvent1Desc', c.events.event1_desc);
+      setVal('cmsEvent1Photo', c.events.event1_photo);
+      updatePreviewFromInput(c.events.event1_photo, 'prevEvent1Photo');
+
+      setVal('cmsEvent2Badge', c.events.event2_badge);
+      setVal('cmsEvent2Title', c.events.event2_title);
+      setVal('cmsEvent2Desc', c.events.event2_desc);
+      setVal('cmsEvent2Photo', c.events.event2_photo);
+      updatePreviewFromInput(c.events.event2_photo, 'prevEvent2Photo');
+
+      setVal('cmsEvent3Badge', c.events.event3_badge);
+      setVal('cmsEvent3Title', c.events.event3_title);
+      setVal('cmsEvent3Desc', c.events.event3_desc);
+      setVal('cmsEvent3Photo', c.events.event3_photo);
+      updatePreviewFromInput(c.events.event3_photo, 'prevEvent3Photo');
+    }
+
+    // Gallery
+    if (c.gallery) {
+      for (let i = 1; i <= 6; i++) {
+        setVal(`cmsGallery${i}Label`, c.gallery[`g${i}_label`]);
+        setVal(`cmsGallery${i}Photo`, c.gallery[`g${i}_photo`]);
+        updatePreviewFromInput(c.gallery[`g${i}_photo`], `prevGallery${i}`);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load CMS content:', err);
+  }
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined && val !== null) el.value = val;
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function showCmsAlert(msg, type = 'success') {
+  const alertEl = document.getElementById('cmsAlertBanner');
+  if (!alertEl) return;
+  alertEl.className = `alert ${type}`;
+  alertEl.textContent = msg;
+  alertEl.style.display = 'block';
+  window.scrollTo({ top: 120, behavior: 'smooth' });
+  setTimeout(() => {
+    alertEl.style.display = 'none';
+  }, 5000);
+}
+
+// Save All Content Button Handler
+const saveAllContentBtn = document.getElementById('saveAllContentBtn');
+if (saveAllContentBtn) {
+  saveAllContentBtn.addEventListener('click', async () => {
+    saveAllContentBtn.disabled = true;
+    saveAllContentBtn.innerHTML = '<span>Saving Changes...</span>';
+
+    const payload = {
+      contact: {
+        phone: getVal('cmsContactPhone'),
+        phone_clean: getVal('cmsContactPhone').replace(/[^0-9+]/g, ''),
+        whatsapp: getVal('cmsContactWhatsapp'),
+        address: getVal('cmsContactAddress'),
+        hours: getVal('cmsContactHours'),
+        hours_note: getVal('cmsContactHoursNote')
+      },
+      about: {
+        lead: getVal('cmsAboutLead'),
+        p1: getVal('cmsAboutP1'),
+        p2: getVal('cmsAboutP2'),
+        founding_year: getVal('cmsFoundingYear'),
+        campus_photo: getVal('cmsCampusPhoto')
+      },
+      leadership: {
+        correspondent_name: getVal('cmsCorrespName'),
+        correspondent_message: getVal('cmsCorrespMessage'),
+        correspondent_photo: getVal('cmsCorrespPhoto'),
+        principal_name: getVal('cmsPrincipalName'),
+        principal_message: getVal('cmsPrincipalMessage'),
+        principal_photo: getVal('cmsPrincipalPhoto'),
+        best_teacher_name: getVal('cmsTeacherName'),
+        best_teacher_title: getVal('cmsTeacherTitle') || 'BEST TEACHER · MATHEMATICS',
+        best_teacher_message: getVal('cmsTeacherMessage'),
+        best_teacher_photo: getVal('cmsTeacherPhoto')
+      },
+      students: {
+        topper_badge: getVal('cmsTopperBadge') || 'TOPPER · CLASS 10',
+        topper_name: getVal('cmsTopperName'),
+        topper_details: getVal('cmsTopperDetails'),
+        topper_photo: getVal('cmsTopperPhoto'),
+        achiever_badge: getVal('cmsAchieverBadge') || 'ACHIEVER · SCIENCE OLYMPIAD',
+        achiever_name: getVal('cmsAchieverName'),
+        achiever_details: getVal('cmsAchieverDetails'),
+        achiever_photo: getVal('cmsAchieverPhoto'),
+        star_badge: getVal('cmsStarBadge') || 'STUDENT OF THE YEAR',
+        star_name: getVal('cmsStarName'),
+        star_details: getVal('cmsStarDetails'),
+        star_photo: getVal('cmsStarPhoto')
+      },
+      events: {
+        event1_badge: getVal('cmsEvent1Badge') || 'UPCOMING EVENT · [DATE]',
+        event1_title: getVal('cmsEvent1Title'),
+        event1_desc: getVal('cmsEvent1Desc'),
+        event1_photo: getVal('cmsEvent1Photo'),
+        event2_badge: getVal('cmsEvent2Badge') || 'SCHOOL UPDATE · [DATE]',
+        event2_title: getVal('cmsEvent2Title'),
+        event2_desc: getVal('cmsEvent2Desc'),
+        event2_photo: getVal('cmsEvent2Photo'),
+        event3_badge: getVal('cmsEvent3Badge') || 'ACADEMIC CALENDAR',
+        event3_title: getVal('cmsEvent3Title'),
+        event3_desc: getVal('cmsEvent3Desc'),
+        event3_photo: getVal('cmsEvent3Photo')
+      },
+      gallery: {
+        g1_label: getVal('cmsGallery1Label') || 'Campus',
+        g1_photo: getVal('cmsGallery1Photo'),
+        g2_label: getVal('cmsGallery2Label') || 'Classroom',
+        g2_photo: getVal('cmsGallery2Photo'),
+        g3_label: getVal('cmsGallery3Label') || 'Activities',
+        g3_photo: getVal('cmsGallery3Photo'),
+        g4_label: getVal('cmsGallery4Label') || 'Celebrations',
+        g4_photo: getVal('cmsGallery4Photo'),
+        g5_label: getVal('cmsGallery5Label') || 'Students',
+        g5_photo: getVal('cmsGallery5Photo'),
+        g6_label: getVal('cmsGallery6Label') || 'School events',
+        g6_photo: getVal('cmsGallery6Photo')
+      }
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/content`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showCmsAlert('✓ All website text and photos have been updated successfully! Changes are live.', 'success');
+      } else {
+        alert(data.message || 'Failed to save changes.');
+      }
+    } catch (err) {
+      alert('Error connecting to server while saving content.');
+    } finally {
+      saveAllContentBtn.disabled = false;
+      saveAllContentBtn.innerHTML = '<span>💾 Save All Changes</span>';
+    }
+  });
+}
+
+// Reset Defaults Handler
+const resetContentBtn = document.getElementById('resetContentBtn');
+if (resetContentBtn) {
+  resetContentBtn.addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to reset all website matter and photos to defaults?')) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/content/reset`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showCmsAlert('✓ Content reset to defaults successfully.', 'success');
+        loadCmsContent();
+      }
+    } catch (err) {
+      alert('Error resetting content.');
+    }
+  });
+}
 
 // Initialize on load
 verifyAuth();

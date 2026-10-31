@@ -707,3 +707,249 @@ body {
     width: 100%;
   }
 }
+
+/* =========================================
+   APP TABS (ENQUIRIES VS CMS)
+   ========================================= */
+.app-nav-tabs {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.tabs-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  gap: 12px;
+}
+
+.nav-tab {
+  background: none;
+  border: none;
+  padding: 16px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-tab:hover {
+  color: var(--navy);
+}
+
+.nav-tab.active {
+  color: var(--navy);
+  border-bottom-color: var(--gold);
+  background: rgba(214, 173, 103, 0.05);
+}
+
+/* =========================================
+   CMS LAYOUT & COMPONENTS
+   ========================================= */
+.cms-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.cms-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: var(--navy);
+}
+
+.cms-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.cms-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cms-sub-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.cms-sub-btn {
+  background: transparent;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cms-sub-btn:hover {
+  background: #f1f5f9;
+}
+
+.cms-sub-btn.active {
+  background: var(--navy);
+  color: #ffffff;
+}
+
+.cms-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  margin-bottom: 24px;
+}
+
+.card-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--navy);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.cms-divider {
+  border: 0;
+  border-top: 1px dashed var(--border);
+  margin: 26px 0;
+}
+
+.cms-profile-block h4 {
+  font-size: 15px;
+  color: var(--deep);
+  margin-bottom: 14px;
+}
+
+.profile-editor-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.photo-uploader-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.photo-preview {
+  width: 130px;
+  height: 140px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 2px dashed #cbd5e1;
+  display: grid;
+  place-items: center;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.photo-preview.banner-prev {
+  width: 100%;
+  height: 160px;
+  margin-top: 10px;
+}
+
+.photo-preview.gallery-prev {
+  width: 100%;
+  height: 120px;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.photo-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.photo-input-group input {
+  flex: 1;
+}
+
+.gallery-cms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.gallery-cms-card {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gallery-cms-card label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .profile-editor-row {
+    grid-template-columns: 1fr;
+  }
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .cms-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cms-actions {
+    width: 100%;
+  }
+  .cms-actions .btn {
+    flex: 1;
+  }
+}
+

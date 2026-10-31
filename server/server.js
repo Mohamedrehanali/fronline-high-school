@@ -43,6 +43,12 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/enquiries', require('./routes/enquiries'));
+app.use('/api/content', require('./routes/content'));
+app.use('/api/upload', require('./routes/upload'));
+
+// Serve uploaded photos at /uploads
+const uploadDir = path.join(__dirname, '..', 'uploads');
+app.use('/uploads', express.static(uploadDir));
 
 // Serve Admin Dashboard at /admin
 const adminDir = path.join(__dirname, '..', 'admin');

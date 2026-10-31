@@ -42,7 +42,7 @@
         <img src="/assets/frontline-logo.png" alt="Frontline Logo" class="brand-logo">
         <div class="brand-text">
           <h1>Frontline High School</h1>
-          <span>Admissions & Enquiries Desk · Mahbubnagar</span>
+          <span>Admissions & Website Desk · Mahbubnagar</span>
         </div>
       </div>
       <div class="header-right">
@@ -55,108 +55,579 @@
       </div>
     </header>
 
+    <!-- Main Navigation Tabs -->
+    <nav class="app-nav-tabs">
+      <div class="tabs-container">
+        <button class="nav-tab active" id="tabEnquiriesBtn" onclick="switchMainTab('enquiries')">
+          📋 Admissions Enquiries (<span id="badgeEnquiriesCount">0</span>)
+        </button>
+        <button class="nav-tab" id="tabCmsBtn" onclick="switchMainTab('cms')">
+          ✏️ Edit Website Matter & Photos
+        </button>
+      </div>
+    </nav>
+
     <!-- Main Container -->
     <main class="dashboard-main">
-      <!-- Stats Row -->
-      <section class="stats-row">
-        <div class="stat-card">
-          <span class="stat-icon icon-total">📋</span>
-          <div class="stat-info">
-            <span class="stat-label">Total Enquiries</span>
-            <strong id="statTotal" class="stat-number">0</strong>
-          </div>
-        </div>
-        <div class="stat-card">
-          <span class="stat-icon icon-today">⚡</span>
-          <div class="stat-info">
-            <span class="stat-label">Received Today</span>
-            <strong id="statToday" class="stat-number">0</strong>
-          </div>
-        </div>
-        <div class="stat-card">
-          <span class="stat-icon icon-new">🆕</span>
-          <div class="stat-info">
-            <span class="stat-label">New / Pending</span>
-            <strong id="statNew" class="stat-number">0</strong>
-          </div>
-        </div>
-        <div class="stat-card">
-          <span class="stat-icon icon-enrolled">🎓</span>
-          <div class="stat-info">
-            <span class="stat-label">Enrolled Students</span>
-            <strong id="statEnrolled" class="stat-number">0</strong>
-          </div>
-        </div>
-      </section>
 
-      <!-- Action & Filter Bar -->
-      <section class="table-controls">
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="searchInput" placeholder="Search by parent, student, phone, or Ref ID...">
-        </div>
-        <div class="filter-group">
-          <select id="statusFilter" class="select-control">
-            <option value="all">All Statuses</option>
-            <option value="new">New</option>
-            <option value="contacted">Contacted</option>
-            <option value="enrolled">Enrolled</option>
-            <option value="closed">Closed</option>
-          </select>
-          <select id="gradeFilter" class="select-control">
-            <option value="all">All Grades</option>
-            <option value="Nursery">Nursery</option>
-            <option value="LKG">LKG</option>
-            <option value="UKG">UKG</option>
-            <option value="Class 1">Class 1</option>
-            <option value="Class 2">Class 2</option>
-            <option value="Class 3">Class 3</option>
-            <option value="Class 4">Class 4</option>
-            <option value="Class 5">Class 5</option>
-            <option value="Class 6">Class 6</option>
-            <option value="Class 7">Class 7</option>
-            <option value="Class 8">Class 8</option>
-            <option value="Class 9">Class 9</option>
-            <option value="Class 10">Class 10</option>
-          </select>
-          <button id="refreshBtn" class="btn btn-secondary" title="Refresh records">↻ Refresh</button>
-          <button id="exportCsvBtn" class="btn btn-gold" title="Download Excel/CSV file">⬇ Export CSV</button>
-        </div>
-      </section>
+      <!-- ============================================== -->
+      <!-- VIEW 1: ENQUIRIES & LEADS MANAGEMENT           -->
+      <!-- ============================================== -->
+      <div id="enquiriesSectionView">
+        <!-- Stats Row -->
+        <section class="stats-row">
+          <div class="stat-card">
+            <span class="stat-icon icon-total">📋</span>
+            <div class="stat-info">
+              <span class="stat-label">Total Enquiries</span>
+              <strong id="statTotal" class="stat-number">0</strong>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon icon-today">⚡</span>
+            <div class="stat-info">
+              <span class="stat-label">Received Today</span>
+              <strong id="statToday" class="stat-number">0</strong>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon icon-new">🆕</span>
+            <div class="stat-info">
+              <span class="stat-label">New / Pending</span>
+              <strong id="statNew" class="stat-number">0</strong>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon icon-enrolled">🎓</span>
+            <div class="stat-info">
+              <span class="stat-label">Enrolled Students</span>
+              <strong id="statEnrolled" class="stat-number">0</strong>
+            </div>
+          </div>
+        </section>
 
-      <!-- Table Section -->
-      <section class="table-container">
-        <div id="tableLoading" class="table-loader" style="display: none;">
-          <div class="spinner"></div>
-          <span>Loading student enquiries...</span>
+        <!-- Action & Filter Bar -->
+        <section class="table-controls">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search by parent, student, phone, or Ref ID...">
+          </div>
+          <div class="filter-group">
+            <select id="statusFilter" class="select-control">
+              <option value="all">All Statuses</option>
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="enrolled">Enrolled</option>
+              <option value="closed">Closed</option>
+            </select>
+            <select id="gradeFilter" class="select-control">
+              <option value="all">All Grades</option>
+              <option value="Nursery">Nursery</option>
+              <option value="LKG">LKG</option>
+              <option value="UKG">UKG</option>
+              <option value="Class 1">Class 1</option>
+              <option value="Class 2">Class 2</option>
+              <option value="Class 3">Class 3</option>
+              <option value="Class 4">Class 4</option>
+              <option value="Class 5">Class 5</option>
+              <option value="Class 6">Class 6</option>
+              <option value="Class 7">Class 7</option>
+              <option value="Class 8">Class 8</option>
+              <option value="Class 9">Class 9</option>
+              <option value="Class 10">Class 10</option>
+            </select>
+            <button id="refreshBtn" class="btn btn-secondary" title="Refresh records">↻ Refresh</button>
+            <button id="exportCsvBtn" class="btn btn-gold" title="Download Excel/CSV file">⬇ Export CSV</button>
+          </div>
+        </section>
+
+        <!-- Table Section -->
+        <section class="table-container">
+          <div id="tableLoading" class="table-loader" style="display: none;">
+            <div class="spinner"></div>
+            <span>Loading student enquiries...</span>
+          </div>
+          <table class="data-table" id="enquiriesTable">
+            <thead>
+              <tr>
+                <th>Ref ID</th>
+                <th>Date & Time</th>
+                <th>Parent Name</th>
+                <th>Student & Grade</th>
+                <th>Phone & Quick Actions</th>
+                <th>Status</th>
+                <th>Office Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Dynamic rows will be inserted here -->
+            </tbody>
+          </table>
+          <div id="emptyState" class="empty-state" style="display: none;">
+            <span class="empty-icon">📂</span>
+            <h3>No enquiries found</h3>
+            <p>When parents submit enquiry forms on the website, they will appear here in real time.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- VIEW 2: WEBSITE CMS (MATTER & PHOTOS)         -->
+      <!-- ============================================== -->
+      <div id="cmsSectionView" style="display: none;">
+        <!-- CMS Header & Action Bar -->
+        <div class="cms-header-row">
+          <div>
+            <h2 class="cms-title">Website Content & Photo Manager</h2>
+            <p class="cms-subtitle">Easily edit text matter, leadership profiles, star students, notices, and upload photos for the school website.</p>
+          </div>
+          <div class="cms-actions">
+            <button type="button" class="btn btn-secondary" id="resetContentBtn" title="Reset all fields to defaults">↺ Reset Defaults</button>
+            <button type="button" class="btn btn-gold" id="saveAllContentBtn">
+              <span>💾 Save All Changes</span>
+            </button>
+          </div>
         </div>
-        <table class="data-table" id="enquiriesTable">
-          <thead>
-            <tr>
-              <th>Ref ID</th>
-              <th>Date & Time</th>
-              <th>Parent Name</th>
-              <th>Student & Grade</th>
-              <th>Phone & Quick Actions</th>
-              <th>Status</th>
-              <th>Office Notes</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <!-- Dynamic rows will be inserted here -->
-          </tbody>
-        </table>
-        <div id="emptyState" class="empty-state" style="display: none;">
-          <span class="empty-icon">📂</span>
-          <h3>No enquiries found</h3>
-          <p>When parents submit enquiry forms on the website, they will appear here in real time.</p>
+
+        <div id="cmsAlertBanner" class="alert success" style="display: none;"></div>
+
+        <!-- CMS Sub-navigation -->
+        <div class="cms-sub-nav">
+          <button class="cms-sub-btn active" onclick="switchCmsSection('secContact')">🏛️ School Contact & Info</button>
+          <button class="cms-sub-btn" onclick="switchCmsSection('secLeadership')">👥 Leadership & Team</button>
+          <button class="cms-sub-btn" onclick="switchCmsSection('secStudents')">🎓 Star Students</button>
+          <button class="cms-sub-btn" onclick="switchCmsSection('secEvents')">📅 Events & Notices</button>
+          <button class="cms-sub-btn" onclick="switchCmsSection('secGallery')">🖼️ Photo Gallery & Campus</button>
         </div>
-      </section>
+
+        <form id="cmsForm">
+          <!-- SECTION 1: CONTACT & BASIC INFO -->
+          <div id="secContact" class="cms-card">
+            <h3 class="card-heading">🏛️ School Information & Contact Details</h3>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Contact Phone Number</label>
+                <input type="text" id="cmsContactPhone" placeholder="e.g. +91 98859 73220">
+              </div>
+              <div class="form-group">
+                <label>Admissions WhatsApp Number (Without + or spaces)</label>
+                <input type="text" id="cmsContactWhatsapp" placeholder="e.g. 919885973220">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>School Address</label>
+              <textarea id="cmsContactAddress" rows="2" placeholder="School full address"></textarea>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Office Timings</label>
+                <input type="text" id="cmsContactHours" placeholder="e.g. Monday – Saturday · 9:00 AM – 5:30 PM">
+              </div>
+              <div class="form-group">
+                <label>Office Timing Note</label>
+                <input type="text" id="cmsContactHoursNote" placeholder="e.g. Confirm holiday and office timings by phone.">
+              </div>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Founding Year</label>
+                <input type="text" id="cmsFoundingYear" placeholder="e.g. 2010">
+              </div>
+              <div class="form-group">
+                <label>About Lead Line</label>
+                <input type="text" id="cmsAboutLead" placeholder="e.g. Welcome to Frontline High School.">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>About Us Paragraph 1</label>
+              <textarea id="cmsAboutP1" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>About Us Paragraph 2</label>
+              <textarea id="cmsAboutP2" rows="3"></textarea>
+            </div>
+          </div>
+
+          <!-- SECTION 2: LEADERSHIP & FACULTY -->
+          <div id="secLeadership" class="cms-card" style="display: none;">
+            <h3 class="card-heading">👥 Leadership & Faculty Profiles</h3>
+
+            <!-- Correspondent -->
+            <div class="cms-profile-block">
+              <h4>1. School Correspondent</h4>
+              <div class="profile-editor-row">
+                <div class="photo-uploader-box">
+                  <div class="photo-preview" id="prevCorrespPhoto"><span>No Photo</span></div>
+                  <input type="file" id="fileCorrespPhoto" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsCorrespPhoto', 'prevCorrespPhoto')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileCorrespPhoto')">📁 Upload Photo</button>
+                </div>
+                <div class="profile-fields">
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label>Correspondent Name</label>
+                      <input type="text" id="cmsCorrespName" placeholder="Correspondent Full Name">
+                    </div>
+                    <div class="form-group">
+                      <label>Photo URL (or use Upload button)</label>
+                      <input type="text" id="cmsCorrespPhoto" placeholder="https://... or /uploads/..." onchange="updatePreviewFromInput(this.value, 'prevCorrespPhoto')">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Message / Statement</label>
+                    <textarea id="cmsCorrespMessage" rows="2" placeholder="Message from Correspondent..."></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="cms-divider">
+
+            <!-- Principal -->
+            <div class="cms-profile-block">
+              <h4>2. School Principal</h4>
+              <div class="profile-editor-row">
+                <div class="photo-uploader-box">
+                  <div class="photo-preview" id="prevPrincipalPhoto"><span>No Photo</span></div>
+                  <input type="file" id="filePrincipalPhoto" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsPrincipalPhoto', 'prevPrincipalPhoto')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('filePrincipalPhoto')">📁 Upload Photo</button>
+                </div>
+                <div class="profile-fields">
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label>Principal Name</label>
+                      <input type="text" id="cmsPrincipalName" placeholder="Principal Full Name">
+                    </div>
+                    <div class="form-group">
+                      <label>Photo URL (or use Upload button)</label>
+                      <input type="text" id="cmsPrincipalPhoto" placeholder="https://... or /uploads/..." onchange="updatePreviewFromInput(this.value, 'prevPrincipalPhoto')">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Principal Welcome Message</label>
+                    <textarea id="cmsPrincipalMessage" rows="2" placeholder="Welcome message from Principal..."></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="cms-divider">
+
+            <!-- Best Teacher -->
+            <div class="cms-profile-block">
+              <h4>3. Best Teacher / Faculty Highlight</h4>
+              <div class="profile-editor-row">
+                <div class="photo-uploader-box">
+                  <div class="photo-preview" id="prevTeacherPhoto"><span>No Photo</span></div>
+                  <input type="file" id="fileTeacherPhoto" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsTeacherPhoto', 'prevTeacherPhoto')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileTeacherPhoto')">📁 Upload Photo</button>
+                </div>
+                <div class="profile-fields">
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label>Teacher Name</label>
+                      <input type="text" id="cmsTeacherName" placeholder="e.g. Mrs. Radhika Sharma">
+                    </div>
+                    <div class="form-group">
+                      <label>Designation / Subject</label>
+                      <input type="text" id="cmsTeacherTitle" placeholder="e.g. BEST TEACHER · MATHEMATICS">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Photo URL (or use Upload button)</label>
+                    <input type="text" id="cmsTeacherPhoto" placeholder="https://... or /uploads/..." onchange="updatePreviewFromInput(this.value, 'prevTeacherPhoto')">
+                  </div>
+                  <div class="form-group">
+                    <label>Teacher Details & Achievements</label>
+                    <textarea id="cmsTeacherMessage" rows="2" placeholder="Achievements and short introduction..."></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 3: STAR STUDENTS -->
+          <div id="secStudents" class="cms-card" style="display: none;">
+            <h3 class="card-heading">🎓 Star Students & Academic Achievers</h3>
+
+            <!-- Topper -->
+            <div class="cms-profile-block">
+              <h4>1. Class Topper</h4>
+              <div class="profile-editor-row">
+                <div class="photo-uploader-box">
+                  <div class="photo-preview" id="prevTopperPhoto"><span>Student</span></div>
+                  <input type="file" id="fileTopperPhoto" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsTopperPhoto', 'prevTopperPhoto')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileTopperPhoto')">📁 Upload Photo</button>
+                </div>
+                <div class="profile-fields">
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label>Category Badge</label>
+                      <input type="text" id="cmsTopperBadge" placeholder="e.g. TOPPER · CLASS 10">
+                    </div>
+                    <div class="form-group">
+                      <label>Student Full Name</label>
+                      <input type="text" id="cmsTopperName" placeholder="Student Name">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Marks / Achievements</label>
+                    <input type="text" id="cmsTopperDetails" placeholder="e.g. Scored 98.4% in Board Examinations · School Rank 1">
+                  </div>
+                  <div class="form-group">
+                    <label>Photo URL</label>
+                    <input type="text" id="cmsTopperPhoto" placeholder="Image URL..." onchange="updatePreviewFromInput(this.value, 'prevTopperPhoto')">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="cms-divider">
+
+            <!-- Achiever -->
+            <div class="cms-profile-block">
+              <h4>2. Competition Achiever</h4>
+              <div class="profile-editor-row">
+                <div class="photo-uploader-box">
+                  <div class="photo-preview" id="prevAchieverPhoto"><span>Student</span></div>
+                  <input type="file" id="fileAchieverPhoto" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsAchieverPhoto', 'prevAchieverPhoto')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileAchieverPhoto')">📁 Upload Photo</button>
+                </div>
+                <div class="profile-fields">
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label>Category Badge</label>
+                      <input type="text" id="cmsAchieverBadge" placeholder="e.g. ACHIEVER · SCIENCE OLYMPIAD">
+                    </div>
+                    <div class="form-group">
+                      <label>Student Full Name</label>
+                      <input type="text" id="cmsAchieverName" placeholder="Student Name">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Award / Details</label>
+                    <input type="text" id="cmsAchieverDetails" placeholder="e.g. Gold Medalist at State Level Science Olympiad">
+                  </div>
+                  <div class="form-group">
+                    <label>Photo URL</label>
+                    <input type="text" id="cmsAchieverPhoto" placeholder="Image URL..." onchange="updatePreviewFromInput(this.value, 'prevAchieverPhoto')">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="cms-divider">
+
+            <!-- Student of the Year -->
+            <div class="cms-profile-block">
+              <h4>3. Student of the Year / Recognition</h4>
+              <div class="profile-editor-row">
+                <div class="photo-uploader-box">
+                  <div class="photo-preview" id="prevStarPhoto"><span>Student</span></div>
+                  <input type="file" id="fileStarPhoto" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsStarPhoto', 'prevStarPhoto')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileStarPhoto')">📁 Upload Photo</button>
+                </div>
+                <div class="profile-fields">
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label>Category Badge</label>
+                      <input type="text" id="cmsStarBadge" placeholder="e.g. STUDENT OF THE YEAR">
+                    </div>
+                    <div class="form-group">
+                      <label>Student Full Name</label>
+                      <input type="text" id="cmsStarName" placeholder="Student Name">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Achievement Description</label>
+                    <input type="text" id="cmsStarDetails" placeholder="e.g. Excellence in Academics, Sports & Leadership">
+                  </div>
+                  <div class="form-group">
+                    <label>Photo URL</label>
+                    <input type="text" id="cmsStarPhoto" placeholder="Image URL..." onchange="updatePreviewFromInput(this.value, 'prevStarPhoto')">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 4: EVENTS & NOTICES -->
+          <div id="secEvents" class="cms-card" style="display: none;">
+            <h3 class="card-heading">📅 School Events & Notices</h3>
+
+            <!-- Event 1 -->
+            <div class="cms-profile-block">
+              <h4>Notice / Event 1 (Upcoming Event)</h4>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Badge / Date</label>
+                  <input type="text" id="cmsEvent1Badge" placeholder="e.g. UPCOMING EVENT · 14 NOV">
+                </div>
+                <div class="form-group">
+                  <label>Event Name</label>
+                  <input type="text" id="cmsEvent1Title" placeholder="e.g. Annual Sports Day & Children's Day">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Event Details, Timings & Venue</label>
+                <textarea id="cmsEvent1Desc" rows="2"></textarea>
+              </div>
+              <div class="photo-input-group">
+                <input type="text" id="cmsEvent1Photo" placeholder="Event Photo URL..." onchange="updatePreviewFromInput(this.value, 'prevEvent1Photo')">
+                <input type="file" id="fileEvent1Photo" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsEvent1Photo', 'prevEvent1Photo')">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileEvent1Photo')">📁 Upload Photo</button>
+              </div>
+              <div class="photo-preview banner-prev" id="prevEvent1Photo"><span>Event 1 Photo</span></div>
+            </div>
+
+            <hr class="cms-divider">
+
+            <!-- Event 2 -->
+            <div class="cms-profile-block">
+              <h4>Notice / Event 2 (School Announcement)</h4>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Badge / Category</label>
+                  <input type="text" id="cmsEvent2Badge" placeholder="e.g. SCHOOL UPDATE · ADMISSIONS">
+                </div>
+                <div class="form-group">
+                  <label>Announcement Title</label>
+                  <input type="text" id="cmsEvent2Title" placeholder="e.g. Admissions Open for Academic Year 2024-25">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Notice Information for Parents</label>
+                <textarea id="cmsEvent2Desc" rows="2"></textarea>
+              </div>
+              <div class="photo-input-group">
+                <input type="text" id="cmsEvent2Photo" placeholder="Announcement Photo URL..." onchange="updatePreviewFromInput(this.value, 'prevEvent2Photo')">
+                <input type="file" id="fileEvent2Photo" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsEvent2Photo', 'prevEvent2Photo')">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileEvent2Photo')">📁 Upload Photo</button>
+              </div>
+              <div class="photo-preview banner-prev" id="prevEvent2Photo"><span>Notice 2 Photo</span></div>
+            </div>
+
+            <hr class="cms-divider">
+
+            <!-- Event 3 -->
+            <div class="cms-profile-block">
+              <h4>Notice / Event 3 (Academic Calendar & Exams)</h4>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label>Badge / Category</label>
+                  <input type="text" id="cmsEvent3Badge" placeholder="e.g. ACADEMIC CALENDAR">
+                </div>
+                <div class="form-group">
+                  <label>Heading</label>
+                  <input type="text" id="cmsEvent3Title" placeholder="e.g. Exam Dates & Timetable Notice">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Schedule / Timetable Details</label>
+                <textarea id="cmsEvent3Desc" rows="2"></textarea>
+              </div>
+              <div class="photo-input-group">
+                <input type="text" id="cmsEvent3Photo" placeholder="Calendar Photo URL..." onchange="updatePreviewFromInput(this.value, 'prevEvent3Photo')">
+                <input type="file" id="fileEvent3Photo" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsEvent3Photo', 'prevEvent3Photo')">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileEvent3Photo')">📁 Upload Photo</button>
+              </div>
+              <div class="photo-preview banner-prev" id="prevEvent3Photo"><span>Calendar Photo</span></div>
+            </div>
+          </div>
+
+          <!-- SECTION 5: GALLERY & CAMPUS PHOTOS -->
+          <div id="secGallery" class="cms-card" style="display: none;">
+            <h3 class="card-heading">🖼️ School Photo Gallery & Campus Images</h3>
+
+            <div class="cms-profile-block">
+              <h4>Campus / About Section Main Photo</h4>
+              <div class="photo-input-group">
+                <input type="text" id="cmsCampusPhoto" placeholder="Campus Photo URL..." onchange="updatePreviewFromInput(this.value, 'prevCampusPhoto')">
+                <input type="file" id="fileCampusPhoto" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsCampusPhoto', 'prevCampusPhoto')">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileCampusPhoto')">📁 Upload Campus Photo</button>
+              </div>
+              <div class="photo-preview banner-prev" id="prevCampusPhoto"><span>Campus Photo</span></div>
+            </div>
+
+            <hr class="cms-divider">
+
+            <h4>Photo Gallery Grid (6 Slots)</h4>
+            <div class="gallery-cms-grid">
+              <!-- Slot 1 -->
+              <div class="gallery-cms-card">
+                <div class="photo-preview gallery-prev" id="prevGallery1"><span>Slot 1</span></div>
+                <label>Label</label>
+                <input type="text" id="cmsGallery1Label" placeholder="Campus">
+                <div class="photo-input-group" style="margin-top:6px;">
+                  <input type="text" id="cmsGallery1Photo" placeholder="URL..." onchange="updatePreviewFromInput(this.value, 'prevGallery1')">
+                  <input type="file" id="fileGallery1" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsGallery1Photo', 'prevGallery1')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileGallery1')">Upload</button>
+                </div>
+              </div>
+              <!-- Slot 2 -->
+              <div class="gallery-cms-card">
+                <div class="photo-preview gallery-prev" id="prevGallery2"><span>Slot 2</span></div>
+                <label>Label</label>
+                <input type="text" id="cmsGallery2Label" placeholder="Classroom">
+                <div class="photo-input-group" style="margin-top:6px;">
+                  <input type="text" id="cmsGallery2Photo" placeholder="URL..." onchange="updatePreviewFromInput(this.value, 'prevGallery2')">
+                  <input type="file" id="fileGallery2" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsGallery2Photo', 'prevGallery2')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileGallery2')">Upload</button>
+                </div>
+              </div>
+              <!-- Slot 3 -->
+              <div class="gallery-cms-card">
+                <div class="photo-preview gallery-prev" id="prevGallery3"><span>Slot 3</span></div>
+                <label>Label</label>
+                <input type="text" id="cmsGallery3Label" placeholder="Activities">
+                <div class="photo-input-group" style="margin-top:6px;">
+                  <input type="text" id="cmsGallery3Photo" placeholder="URL..." onchange="updatePreviewFromInput(this.value, 'prevGallery3')">
+                  <input type="file" id="fileGallery3" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsGallery3Photo', 'prevGallery3')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileGallery3')">Upload</button>
+                </div>
+              </div>
+              <!-- Slot 4 -->
+              <div class="gallery-cms-card">
+                <div class="photo-preview gallery-prev" id="prevGallery4"><span>Slot 4</span></div>
+                <label>Label</label>
+                <input type="text" id="cmsGallery4Label" placeholder="Celebrations">
+                <div class="photo-input-group" style="margin-top:6px;">
+                  <input type="text" id="cmsGallery4Photo" placeholder="URL..." onchange="updatePreviewFromInput(this.value, 'prevGallery4')">
+                  <input type="file" id="fileGallery4" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsGallery4Photo', 'prevGallery4')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileGallery4')">Upload</button>
+                </div>
+              </div>
+              <!-- Slot 5 -->
+              <div class="gallery-cms-card">
+                <div class="photo-preview gallery-prev" id="prevGallery5"><span>Slot 5</span></div>
+                <label>Label</label>
+                <input type="text" id="cmsGallery5Label" placeholder="Students">
+                <div class="photo-input-group" style="margin-top:6px;">
+                  <input type="text" id="cmsGallery5Photo" placeholder="URL..." onchange="updatePreviewFromInput(this.value, 'prevGallery5')">
+                  <input type="file" id="fileGallery5" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsGallery5Photo', 'prevGallery5')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileGallery5')">Upload</button>
+                </div>
+              </div>
+              <!-- Slot 6 -->
+              <div class="gallery-cms-card">
+                <div class="photo-preview gallery-prev" id="prevGallery6"><span>Slot 6</span></div>
+                <label>Label</label>
+                <input type="text" id="cmsGallery6Label" placeholder="School events">
+                <div class="photo-input-group" style="margin-top:6px;">
+                  <input type="text" id="cmsGallery6Photo" placeholder="URL..." onchange="updatePreviewFromInput(this.value, 'prevGallery6')">
+                  <input type="file" id="fileGallery6" accept="image/*" class="file-input-hidden" onchange="handleFileUpload(this, 'cmsGallery6Photo', 'prevGallery6')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="triggerFileInput('fileGallery6')">Upload</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
     </main>
   </div>
 
-  <!-- Detail & Note Modal -->
+  <!-- Detail & Note Modal for Enquiries -->
   <div id="detailModal" class="modal-backdrop" style="display: none;">
     <div class="modal-card">
       <div class="modal-header">
