@@ -53,9 +53,11 @@ async function verifyAuth() {
 
     if (res.ok) {
       const data = await res.json();
-      showDashboard(data.user.username);
+      const savedUser = JSON.parse(localStorage.getItem('frontline_admin_user') || '{}');
+      showDashboard(data.user.username || savedUser.username, data.user.picture || savedUser.picture);
     } else {
       localStorage.removeItem('frontline_admin_token');
+      localStorage.removeItem('frontline_admin_user');
       authToken = '';
       showLogin();
     }
@@ -67,14 +69,114 @@ async function verifyAuth() {
 function showLogin() {
   loginScreen.style.display = 'flex';
   dashboardApp.style.display = 'none';
+  initGoogleSignIn();
 }
 
-function showDashboard(username) {
+function showDashboard(username, picture) {
   loginScreen.style.display = 'none';
   dashboardApp.style.display = 'flex';
   adminUsernameDisplay.textContent = username || 'Admin';
+
+  const avatar = document.getElementById('adminAvatar');
+  const dot = document.getElementById('adminUserDot');
+  if (avatar && dot) {
+    if (picture) {
+      avatar.src = picture;
+      avatar.style.display = 'inline-block';
+      dot.style.display = 'none';
+    } else {
+      avatar.style.display = 'none';
+      dot.style.display = 'inline-block';
+    }
+  }
+
   loadDashboardData();
 }
+
+// ==========================================
+// GOOGLE SIGN-IN HANDLER
+// ==========================================
+let googleClientId = '';
+
+async function initGoogleSignIn() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/google-config`);
+    if (res.ok) {
+      const data = await res.json();
+      googleClientId = data.googleClientId;
+
+      const fallbackBtn = document.getElementById('fallbackGoogleBtn');
+      const googleBtnContainer = document.getElementById('googleSignInBtn');
+
+      if (googleClientId && window.google && window.google.accounts && window.google.accounts.id) {
+        window.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: handleGoogleSignInCallback
+        });
+
+        window.google.accounts.id.renderButton(googleBtnContainer, {
+          theme: 'outline',
+          size: 'large',
+          width: 360,
+          text: 'signin_with',
+          shape: 'rectangular',
+          logo_alignment: 'left'
+        });
+
+        if (fallbackBtn) fallbackBtn.style.display = 'none';
+        if (googleBtnContainer) googleBtnContainer.style.display = 'block';
+      } else {
+        // If client ID not configured yet or script still loading
+        if (fallbackBtn) fallbackBtn.style.display = 'flex';
+        if (googleBtnContainer) googleBtnContainer.style.display = 'none';
+      }
+    }
+  } catch (err) {
+    console.warn('Could not initialize Google Sign-In:', err);
+  }
+}
+
+window.promptGoogleSignIn = function() {
+  if (!googleClientId) {
+    alert('Google Sign-In Setup:\n\nTo enable one-click Google Sign-In:\n1. Create a free OAuth Client ID in Google Cloud Console.\n2. Add GOOGLE_CLIENT_ID=your_id.apps.googleusercontent.com in your .env file.\n\nIn the meantime, you can sign in instantly using the Admin Username & Password (admin / frontline2024)!');
+    return;
+  }
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    window.google.accounts.id.prompt();
+  }
+};
+
+window.handleGoogleSignInCallback = async function(response) {
+  if (!response || !response.credential) return;
+
+  loginAlert.style.display = 'none';
+  loginBtn.disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      authToken = data.token;
+      localStorage.setItem('frontline_admin_token', authToken);
+      localStorage.setItem('frontline_admin_user', JSON.stringify(data.user));
+      showDashboard(data.user.username, data.user.picture);
+    } else {
+      loginAlert.textContent = data.message || 'Google sign-in was not authorized.';
+      loginAlert.style.display = 'block';
+    }
+  } catch (err) {
+    loginAlert.textContent = 'Network error while authenticating with Google.';
+    loginAlert.style.display = 'block';
+  } finally {
+    loginBtn.disabled = false;
+  }
+};
 
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
